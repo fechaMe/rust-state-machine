@@ -45,7 +45,6 @@ impl Runtime {
 	}
 
 	fn execute_block(&mut self, block: types::Block) -> support::DispatchResult {
-
 		Ok(())
 	}
 }
