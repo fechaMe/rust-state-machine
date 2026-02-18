@@ -34,12 +34,23 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-// #[cfg(test)]
-// mod test {
-// 	#[test]
-// 	fn init_system() {
-// 		let mut system = super::Pallet::<String, u32, u32>::new();
-// 		system.inc_block_number();
-// 		system.inc_nonce(&"alice".to_string());
-// 	}
-// }
+#[cfg(test)]
+mod test {
+	struct TestConfig;
+	impl super::Config for TestConfig {
+		type AccountId = String;
+		type BlockNumber = u32;
+		type Nonce = u32;
+	}
+
+	#[test]
+	fn init_system() {
+		let mut system = super::Pallet::<TestConfig>::new();
+		system.inc_block_number();
+		system.inc_nonce(&"alice".to_string());
+
+		assert_eq!(system.block_number(), 1);
+		assert_eq!(system.nonce.get(&"alice".to_string()), Some(&1));
+		assert_eq!(system.nonce.get(&"bob".to_string()), None);
+	}
+}

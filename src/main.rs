@@ -1,11 +1,17 @@
 mod balances;
+mod support;
 mod system;
+
+pub enum RuntimeCall {}
 
 mod types {
 	pub type AccountId = String;
 	pub type Balance = u128;
 	pub type BlockNumber = u32;
 	pub type Nonce = u32;
+	pub type Extrinsic = crate::support::Extrinsic<AccountId, crate::RuntimeCall>;
+	pub type Header = crate::support::Header<BlockNumber>;
+	pub type Block = crate::support::Block<Header, Extrinsic>;
 }
 
 impl system::Config for Runtime {
@@ -24,9 +30,23 @@ pub struct Runtime {
 	balances: balances::Pallet<Self>,
 }
 
+impl support::Dispatch for Runtime {
+	type Caller = <Runtime as system::Config>::AccountId;
+	type Call = RuntimeCall;
+
+	fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> support::DispatchResult {
+		Ok(())
+	}
+}
+
 impl Runtime {
 	fn new() -> Self {
 		Self { system: system::Pallet::new(), balances: balances::Pallet::new() }
+	}
+
+	fn execute_block(&mut self, block: types::Block) -> support::DispatchResult {
+
+		Ok(())
 	}
 }
 
