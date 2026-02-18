@@ -36,8 +36,30 @@ impl<T: Config> Pallet<T> {
 		let new_to_balance = to_balance.checked_add(&amount).ok_or("Overflow")?;
 
 		self.balances.insert(caller.clone(), new_caller_balance);
-		self.balances.insert(caller.clone(), new_to_balance);
+		self.balances.insert(to.clone(), new_to_balance);
 
+		Ok(())
+	}
+}
+
+pub enum Call<T: Config> {
+	Transfer { to: T::AccountId, amount: T::Balance },
+}
+
+impl<T: Config> crate::support::Dispatch for Pallet<T> {
+	type Caller = T::AccountId;
+	type Call = Call<T>;
+
+	fn dispatch(
+		&mut self,
+		caller: Self::Caller,
+		call: Self::Call,
+	) -> crate::support::DispatchResult {
+		match call {
+			Call::Transfer { to, amount } => {
+				self.transfer(&caller, &to, amount)?;
+			},
+		}
 		Ok(())
 	}
 }
