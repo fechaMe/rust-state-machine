@@ -2,8 +2,6 @@ mod balances;
 mod support;
 mod system;
 
-pub enum RuntimeCall {}
-
 mod types {
 	pub type AccountId = String;
 	pub type Balance = u128;
@@ -12,6 +10,14 @@ mod types {
 	pub type Extrinsic = crate::support::Extrinsic<AccountId, crate::RuntimeCall>;
 	pub type Header = crate::support::Header<BlockNumber>;
 	pub type Block = crate::support::Block<Header, Extrinsic>;
+}
+
+pub enum RuntimeCall {}
+
+#[derive(Debug)]
+pub struct Runtime {
+	system: system::Pallet<Self>,
+	balances: balances::Pallet<Self>,
 }
 
 impl system::Config for Runtime {
@@ -24,19 +30,12 @@ impl balances::Config for Runtime {
 	type Balance = types::Balance;
 }
 
-#[derive(Debug)]
-pub struct Runtime {
-	system: system::Pallet<Self>,
-	balances: balances::Pallet<Self>,
-}
-
 impl support::Dispatch for Runtime {
 	type Caller = <Runtime as system::Config>::AccountId;
 	type Call = RuntimeCall;
 
 	fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> support::DispatchResult {
-
-		Ok(())
+		unimplemented!()
 	}
 }
 
@@ -46,6 +45,16 @@ impl Runtime {
 	}
 
 	fn execute_block(&mut self, block: types::Block) -> support::DispatchResult {
+		self.system.inc_block_number();
+		if self.system.block_number() != block.header.block_number {
+			return Err("block number does not match what is expected")
+		}
+
+		for (i, support::Extrinsic { caller, call }) in block.extrinsics.into_iter().enumerate() {
+			self.system.inc_nonce(&caller);
+		}
+
+
 		Ok(())
 	}
 }
